@@ -20,15 +20,60 @@ Test Factory to make fake objects for testing
 import factory
 from factory.fuzzy import FuzzyChoice, FuzzyDecimal
 from service.models import Product, Category
+import json
+import decimal
 
 
 class ProductFactory(factory.Factory):
     """Creates fake products for testing"""
-
     class Meta:
         """Maps factory to data model"""
-
         model = Product
-
     id = factory.Sequence(lambda n: n)
-   ## Add code to create Fake Products 
+    name = FuzzyChoice(
+        choices=[
+            "Hat",
+            "Pants",
+            "Shirt",
+            "Apple",
+            "Banana",
+            "Pots",
+            "Towels",
+            "Ford",
+            "Chevy",
+            "Hammer",
+            "Wrench"
+        ]
+    )
+    description = factory.Faker("text")
+    price = FuzzyDecimal(0.5, 2000.0, 2)
+    available = FuzzyChoice(choices=[True, False])
+    category = FuzzyChoice(
+        choices=[
+            Category.UNKNOWN,
+            Category.CLOTHS,
+            Category.FOOD,
+            Category.HOUSEWARES,
+            Category.AUTOMOTIVE,
+            Category.TOOLS,
+        ]
+    )
+
+
+class ProductEncoder(json.JSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, Product):
+            data = obj.__dict__.copy()
+            data.pop('_sa_instance_state', None)  # Remove SQLAlchemy internal state
+            return data
+        elif isinstance(obj, decimal.Decimal):
+            return float(obj)  # Convert Decimal to float
+        elif isinstance(obj, Category):
+            return str(obj)  # Convert Category to its string representation
+        return super().default(obj)
+
+
+if __name__ == "__main__":
+    pf = ProductFactory()
+    print("")
+    print(json.dumps(pf, indent=4, cls=ProductEncoder))
