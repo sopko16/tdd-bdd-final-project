@@ -54,3 +54,8 @@ Run behave with this (color and debug prints if/as needed):
 ```bash
 behave --no-capture --no-capture-stderr --color
 ```
+
+Have to serve with this on Windows (gunicorn does not work, uvicorn is for FastAPI mostly...):
+```bash
+waitress-serve --listen=0.0.0.0:5000 service:app
+```
